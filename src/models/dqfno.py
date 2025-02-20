@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from ..layers.embeddings import GridEmbedding2D
+from ..layers.channel_mlp import ChannelMLP
 from ..layers.spectral_convolution import SpectralConv
 from ..layers.fno_block import FNOBlocks
 from .base_model import BaseModel
@@ -67,8 +68,7 @@ class DQFNO(BaseModel, name='DQFNO'):
             raise ValueError(f"Invalid positional embedding: {positional_embedding}. Expected 'grid' or an nn.Module.")
 
         lifting_in_channels = self.in_channels + 2 if self.positional_embedding else self.in_channels
-        # TODO - Move this into channelMLP
-        self.lifting = nn.Linear(lifting_in_channels, self.hidden_channels)
+        self.lifting = ChannelMLP(lifting_in_channels, self.hidden_channels) 
         
         self.fno_blocks = FNOBlocks(
             in_channels=hidden_channels,
@@ -81,8 +81,14 @@ class DQFNO(BaseModel, name='DQFNO'):
             **kwargs
         )
         
-        self.proj1 = nn.Linear(self.hidden_channels, 128)
-        self.proj2 = nn.Linear(128, self.in_channels)
+        self.projection = ChannelMLP(
+            in_channels=self.hidden_channels,
+            out_channels=out_channels,
+            hidden_channels=self.projection_channels,
+            n_layers=2,
+            n_dim=self.n_dim,
+            non_linearity=non_linearity,
+        )
         
         if self.debug:
             self._debug_print_initialization()
@@ -98,9 +104,7 @@ class DQFNO(BaseModel, name='DQFNO'):
         if self.positional_embedding:
             x = self.positional_embedding(x)
         
-        x = x.permute(0, 2, 3, 4, 5, 1)
         x = self.lifting(x)
-        x = x.permute(0, 5, 1, 2, 3, 4)
         
         if self.debug:
             print(f"Shape after lifting: {x.shape}")
@@ -110,12 +114,7 @@ class DQFNO(BaseModel, name='DQFNO'):
             if self.debug:
                 print(f"Shape after FNO layer {layer_idx + 1}: {x.shape}")
         
-        x = x.permute(0, 2, 3, 4, 5, 1)
-        x = self.proj1(x)
-        x = F.gelu(x)
-        x = self.proj2(x)
-        x = x.permute(0, 5, 1, 2, 3, 4)
-        x = x[:, 0, ...].unsqueeze(1)
+        x = self.projection(x)
         
         if self.debug:
             self._debug_print_model_parameters()

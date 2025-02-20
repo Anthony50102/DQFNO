@@ -1,3 +1,7 @@
+# TODO - Update Docstrings
+''' 
+DOC STRINGS ARE OLD
+'''
 import torch
 from torch import nn
 import torch.nn.functional as F
