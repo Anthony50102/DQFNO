@@ -3,7 +3,7 @@ import torch
 from torch import nn
 
 class SpectralConv(nn.Module):
-    r"""2D Fourier layer that performs FFT, applies a linear transform in Fourier space, and then
+    r"""Fourier layer that performs FFT, applies a linear transform in Fourier space, and then
     applies an inverse FFT to return to the spatial domain.
 
     This layer expects an input tensor of shape:
