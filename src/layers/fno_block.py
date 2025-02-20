@@ -56,8 +56,8 @@ class FNOBlocks(nn.Module):
             self.spectral_convs.append(SpectralConv(
                 in_channels=self.in_channels,
                 out_channels=self.out_channels,
-                vars=3,
-                modes=8,
+                n_modes=modes,
+                vars = 3,
                 )
             )
             self.conv3ds.append(nn.Conv3d(
