@@ -100,7 +100,7 @@ class FNOBlocks(nn.Module):
         return self.forward_with_postactivation(x, index, output_shape)
     
     def forward_with_postactivation(self, x, index=0, output_shape=None):
-        x = torch.tanh(x)
+        # x = torch.tanh(x) #TODO - figure out what this shit is for
 
         x_fno = self.convs[index](x,)
         #self.convs(x, index, output_shape=output_shape)

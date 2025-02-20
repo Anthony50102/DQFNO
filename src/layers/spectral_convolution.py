@@ -29,8 +29,8 @@ class SpectralConv(nn.Module):
     def __init__(self, in_channels: int, out_channels: int, vars: int, modes: List[Tuple[int, int]]) -> None:
         super().__init__()
         # TODO - Implement this
-        modes1 = 32  
-        modes2 = 32  
+        modes1 = 8  
+        modes2 = 8  
         self.vars: int = vars
         self.in_channels: int = in_channels
         self.out_channels: int = out_channels
@@ -106,4 +106,5 @@ class SpectralConv(nn.Module):
 
         # Apply the inverse FFT to convert back to the spatial domain.
         x_out: torch.Tensor = torch.fft.irfft2(out_ft, s=(h, w))
+
         return x_out

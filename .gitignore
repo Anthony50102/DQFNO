@@ -1,1 +1,4 @@
 *.pyc
+*pycache*
+*.h5
+*.pdf
