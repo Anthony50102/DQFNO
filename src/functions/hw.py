@@ -1,8 +1,8 @@
 import torch
 
 class HasegawaWatakini():
-    def __init__(self):
-        pass
+    def __init__(self, **kwargs):
+        self.dx = kwargs['dx']
 
     
     def periodic_gradient(self, input_field: torch.Tensor, dx: float, axis: int = 0) -> torch.Tensor:
@@ -61,3 +61,12 @@ class HasegawaWatakini():
         if dtype == 'numpy':
             return gamma_n.numpy()
         return gamma_n
+    
+    def gamma_n(self, x: torch.Tensor) -> torch.Tensor:
+        '''
+        Take in a state (v,x,y)
+        Return a gamma n
+        '''
+        n = x[0,:,:]
+        p = x[2,:,:]
+        return self.get_gamma_n(n, p, self.dx)

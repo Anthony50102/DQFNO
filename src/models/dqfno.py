@@ -7,6 +7,7 @@ from ..layers.embeddings import GridEmbedding2D
 from ..layers.channel_mlp import ChannelMLP
 from ..layers.spectral_convolution import SpectralConv
 from ..layers.fno_block import FNOBlocks
+from ..layers.derived import GammaN, DerivedMLP
 from .base_model import BaseModel
 
 class DQFNO(BaseModel, name='DQFNO'):
@@ -44,6 +45,7 @@ class DQFNO(BaseModel, name='DQFNO'):
         positional_embedding: Union[str, nn.Module] = "grid",
         non_linearity: nn.Module = F.gelu,
         conv_module: nn.Module = SpectralConv,
+        derived_module: nn.Module = GammaN,
         debug: bool = False,
         **kwargs
     ) -> None:
@@ -89,6 +91,11 @@ class DQFNO(BaseModel, name='DQFNO'):
             n_dim=self.n_dim,
             non_linearity=non_linearity,
         )
+
+        self.derived_module = DerivedMLP(
+            dx = 0.6544984694978736,
+            layers = [20,64,10],
+        ) if derived_module != None else None
         
         if self.debug:
             self._debug_print_initialization()
@@ -96,6 +103,8 @@ class DQFNO(BaseModel, name='DQFNO'):
     def forward(self, x: torch.Tensor, output_shape: Union[Tuple[int, ...], List[Tuple[int, ...]], None] = None, **kwargs) -> torch.Tensor:
         b, c, t, v, h, w = x.shape
         
+        self.derived_module(x) if self.derived_module != None else None
+
         if self.debug:
             print(f"Input shape: (batch={b}, channels={c}, timesteps={t}, vars={v}, height={h}, width={w})")
 
@@ -115,11 +124,18 @@ class DQFNO(BaseModel, name='DQFNO'):
                 print(f"Shape after FNO layer {layer_idx + 1}: {x.shape}")
         
         x = self.projection(x)
+
+        derived_x = self.derived_module(x) if self.derived_module != None else None
         
         if self.debug:
             self._debug_print_model_parameters()
         
-        return x
+        if self.derived_module != None:
+            return x, derived_x
+        
+        if self.derived_module == None:
+            return x
+
     
     @property
     def modes(self) -> Tuple[int, ...]:
