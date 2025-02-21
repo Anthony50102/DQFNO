@@ -12,7 +12,6 @@ def test_file(file_path: str, batch_size: int, verbose: bool) -> None:
         parameters = dict(h5_file.attrs)
         L = 2 * torch.pi / parameters["k0"]
         dx = L / parameters["x_save"]
-        print(dx)
         steps = len(h5_file["density"])
         
         if verbose:

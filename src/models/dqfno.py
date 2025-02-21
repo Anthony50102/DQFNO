@@ -7,7 +7,7 @@ from ..layers.embeddings import GridEmbedding2D
 from ..layers.channel_mlp import ChannelMLP
 from ..layers.spectral_convolution import SpectralConv
 from ..layers.fno_block import FNOBlocks
-from ..layers.derived import GammaN, DerivedMLP
+from ..layers.derived import DerivedMLP
 from .base_model import BaseModel
 
 class DQFNO(BaseModel, name='DQFNO'):
@@ -45,7 +45,7 @@ class DQFNO(BaseModel, name='DQFNO'):
         positional_embedding: Union[str, nn.Module] = "grid",
         non_linearity: nn.Module = F.gelu,
         conv_module: nn.Module = SpectralConv,
-        derived_module: nn.Module = GammaN,
+        derived_module: nn.Module = DerivedMLP,
         debug: bool = False,
         **kwargs
     ) -> None:
