@@ -31,7 +31,7 @@ class HasegawaWatakini():
         gradient = (shifted_forward - shifted_backward) / (2 * dx)
         return gradient
 
-    def get_gamma_n(self, n: torch.Tensor, p: torch.Tensor, dx: float, dy_p: torch.Tensor = None) -> torch.Tensor:
+    def get_gamma_n(self, n: torch.Tensor, p: torch.Tensor, dx: float, dy_p: torch.Tensor = None, dtype: str = 'torch') -> torch.Tensor:
         """
         Compute the average particle flux (Γₙ) using the formula:
         $$
@@ -47,9 +47,17 @@ class HasegawaWatakini():
         Returns:
             torch.Tensor: Computed average particle flux value.
         """
+        if dtype == 'numpy':
+            n, p, dx = torch.from_numpy(n), torch.from_numpy(p), torch.tensor(float(dx)).float()
+            if dy_p != None:
+                dy_p = torch.from_numpy(dy_p)
+
         if dy_p is None:
             dy_p = self.periodic_gradient(p, dx=dx, axis=-2)  # Gradient in the y-direction
 
         # Compute the product of n and dy_p, then take the mean
         gamma_n = -torch.mean(n * dy_p, dim=(-2, -1))  # Mean over y and x dimensions
+        
+        if dtype == 'numpy':
+            return gamma_n.numpy()
         return gamma_n
