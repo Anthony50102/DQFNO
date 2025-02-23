@@ -1,8 +1,8 @@
 import torch
 
 class HasegawaWatakini():
-    def __init__(self, **kwargs):
-        self.dx = kwargs['dx']
+    def __init__(self, dx: float, **kwargs):
+        self.dx = dx 
 
     
     def periodic_gradient(self, input_field: torch.Tensor, dx: float, axis: int = 0) -> torch.Tensor:
