@@ -101,6 +101,7 @@ class DQFNO(BaseModel, name='DQFNO'):
             self._debug_print_initialization()
 
     def forward(self, x: torch.Tensor, output_shape: Union[Tuple[int, ...], List[Tuple[int, ...]], None] = None, **kwargs) -> torch.Tensor:
+        x, derived_x = x
         b, c, t, v, h, w = x.shape
         
         self.derived_module(x) if self.derived_module != None else None
@@ -131,7 +132,7 @@ class DQFNO(BaseModel, name='DQFNO'):
             self._debug_print_model_parameters()
         
         if self.derived_module != None:
-            return x, derived_x
+            return (x, derived_x)
         
         if self.derived_module == None:
             return x

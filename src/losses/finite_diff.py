@@ -121,3 +121,38 @@ def central_diff_3d(x, h, fix_x_bnd=False, fix_y_bnd=False, fix_z_bnd=False):
         dz[...,:,:,-1] = (x[...,:,:,-1] - x[...,:,:,-2])/h[2]
         
     return dx, dy, dz
+
+
+def laplacian_2d(x: torch.Tensor, h: float, fix_x_bnd=False, fix_y_bnd=False) -> torch.Tensor:
+    """
+    Compute the Laplacian of a 2D tensor x on a regular grid with spacing h.
+    Uses central finite differences with periodic boundaries by default.
+    
+    Parameters:
+        x : torch.Tensor
+            Input 2D tensor with shape (y, x).
+        h : float
+            Grid spacing (assumed the same in both directions).
+        fix_x_bnd : bool, optional
+            Whether to adjust the x boundaries using one-sided differences.
+        fix_y_bnd : bool, optional
+            Whether to adjust the y boundaries using one-sided differences.
+    
+    Returns:
+        torch.Tensor: The Laplacian of x.
+    """
+    # Second derivative along y (dim -2)
+    d2x_dy2 = (torch.roll(x, shifts=-1, dims=-2) - 2 * x + torch.roll(x, shifts=1, dims=-2)) / (h**2)
+    
+    # Second derivative along x (dim -1)
+    d2x_dx2 = (torch.roll(x, shifts=-1, dims=-1) - 2 * x + torch.roll(x, shifts=1, dims=-1)) / (h**2)
+    
+    # Optionally fix boundaries if non-periodic:
+    if fix_x_bnd:
+        d2x_dx2[..., 0] = (x[..., 2] - 2 * x[..., 1] + x[..., 0]) / (h**2)
+        d2x_dx2[..., -1] = (x[..., -1] - 2 * x[..., -2] + x[..., -3]) / (h**2)
+    if fix_y_bnd:
+        d2x_dy2[0, ...] = (x[2, ...] - 2 * x[1, ...] + x[0, ...]) / (h**2)
+        d2x_dy2[-1, ...] = (x[-1, ...] - 2 * x[-2, ...] + x[-3, ...]) / (h**2)
+    
+    return d2x_dy2 + d2x_dx2
