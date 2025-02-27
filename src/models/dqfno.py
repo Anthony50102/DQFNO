@@ -1,4 +1,5 @@
 from typing import Tuple, List, Union
+import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -94,7 +95,8 @@ class DQFNO(BaseModel, name='DQFNO'):
 
         self.derived_module = DerivedMLP(
             dx = 0.6544984694978736,
-            layers = [20,64,10],
+            # TODO - Remove this hardcoding, also make sure this accepts different batch sizes
+            layers = [400,528,200],
         ) if derived_module != None else None
         
         if self.debug:
@@ -132,7 +134,8 @@ class DQFNO(BaseModel, name='DQFNO'):
             self._debug_print_model_parameters()
         
         if self.derived_module != None:
-            return (x, derived_x)
+            # TODO - Fix to allow for multiple batch sizes 
+            return (x, derived_x.unsqueeze(0))
         
         if self.derived_module == None:
             return x
@@ -160,3 +163,59 @@ class DQFNO(BaseModel, name='DQFNO'):
         print("[DEBUG] Model Parameters:")
         for name, param in self.named_parameters():
             print(f"{name}: {param.shape}")
+
+    def save(self, directory: str, filename: str = "model.pth") -> None:
+        """
+        Saves the model's state dictionary and hyperparameters to the specified directory.
+
+        Args:
+            directory (str): Path to the directory where the model will be saved.
+            filename (str, optional): Name of the file to save the model as. Defaults to "model.pth".
+        """
+        os.makedirs(directory, exist_ok=True)
+        filepath = os.path.join(directory, filename)
+
+        checkpoint = {
+            "state_dict": self.state_dict(),
+            "hyperparameters": {
+                "modes": self._modes,
+                "in_channels": self.in_channels,
+                "out_channels": self.out_channels,
+                "hidden_channels": self.hidden_channels,
+                "n_layers": self.n_layers,
+                "lifting_channel_ratio": self.lifting_channel_ratio,
+                "projection_channel_ratio": self.projection_channel_ratio,
+                "positional_embedding": "grid" if isinstance(self.positional_embedding, GridEmbedding2D) else None,
+                "non_linearity": self.non_linearity,
+                "debug": self.debug,
+            }
+        }
+
+        torch.save(checkpoint, filepath)
+        print(f"Model saved to {filepath}")
+
+    @classmethod
+    def load(cls, directory: str, filename: str = "model.pth", device: torch.device = torch.device("cpu")) -> "DQFNO":
+        """
+        Loads the model from a checkpoint, automatically restoring hyperparameters.
+
+        Args:
+            directory (str): Path to the directory containing the model checkpoint.
+            filename (str, optional): Name of the file to load. Defaults to "model.pth".
+            device (torch.device, optional): Device to load the model onto. Defaults to CPU.
+
+        Returns:
+            DQFNO: The loaded model instance.
+        """
+        filepath = os.path.join(directory, filename)
+        if not os.path.exists(filepath):
+            raise FileNotFoundError(f"Checkpoint not found at {filepath}")
+
+        checkpoint = torch.load(filepath, map_location=device, weights_only=False)
+
+        model = cls(**checkpoint["hyperparameters"])
+        model.load_state_dict(checkpoint["state_dict"])
+        model.to(device)
+
+        print(f"Model loaded from {filepath} with restored hyperparameters.")
+        return model
