@@ -95,7 +95,8 @@ class DQFNO(BaseModel, name='DQFNO'):
 
         self.derived_module = DerivedMLP(
             dx = 0.6544984694978736,
-            layers = [20,64,10],
+            # TODO - Remove this hardcoding, also make sure this accepts different batch sizes
+            layers = [400,528,200],
         ) if derived_module != None else None
         
         if self.debug:
