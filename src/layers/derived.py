@@ -3,7 +3,7 @@ from typing import List
 from torch import nn
 from torch.func import vmap
 from ..functions.hw import HasegawaWatakini
-from .channel_mlp import LinearChannelMLP
+from .channel_mlp import ChannelMLP
 
 class DerivedMLP(nn.Module):
     """
@@ -12,16 +12,19 @@ class DerivedMLP(nn.Module):
     using linear layer (or in future conv) to inform/compute future
     derived quanities
     """
-    def __init__(self, layers: List[int], dx: float, **kwargs):
+    def __init__(self, dx: float = None, type:str = 'derived'):
         """
         layer: List[int], layers of the MLP
         """
-        super().__init__(**kwargs)
+        super().__init__()
         self.hw = HasegawaWatakini(dx=dx)
-        self.mlp = LinearChannelMLP(
-            layers=layers
+        self.mlp = ChannelMLP(
+            in_channels=2,
+            hidden_channels=4,
+            out_channels=1
             )
         self.input_derived: torch.tensor = None
+        self._type = type # Determine what type of method we are going to use to predict out new outputs
     
     def _compute_derived(self, x: torch.tensor) -> torch.tensor:
         '''
@@ -35,17 +38,22 @@ class DerivedMLP(nn.Module):
             )(x[:,0])
         return batch_gamma_n
     
+    def store(self, x: torch.tensor):
+        '''
+        Store the derived quanities
+        '''
+        if self._type == 'derived':
+            self.input_derived = x
+    
     def forward(self, x: torch.tensor):
         '''
         if there is no input state compute and store
         '''
-        if self.input_derived == None:
-            self.input_derived = self._compute_derived(x)
-            return
-        
         # Compute predicted state derived 
         x_derived = self._compute_derived(x)
-        x = torch.cat((self.input_derived.flatten(),x_derived.flatten()))
-        x = self.mlp(x)
-        return  x
+        if self._type == 'derived':
+            x = torch.cat((self.input_derived.unsqueeze(0),x_derived.unsqueeze(0)), dim=1) # Shape (B, 2, D)
+            x = self.mlp(x).squeeze(1)
+            x_derived = x
+        return  x_derived # (B, D)
 

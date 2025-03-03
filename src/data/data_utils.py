@@ -21,16 +21,30 @@ class H5PairDataset(Dataset):
         self.device = device
         self.derived = derived
         
-        # Use glob to collect all input and target files (assumes naming convention)
+        # Collect input and target files
         self.input_files = sorted(glob.glob(os.path.join(self.input_dir, 'input*.h5')))
         self.target_files = sorted(glob.glob(os.path.join(self.target_dir, 'target*.h5')))
-        
+
         if len(self.input_files) != len(self.target_files):
             raise ValueError("Number of input files does not match number of target files.")
+
+        # Initialize dx by reading the first file
+        self._dx = self._read_dx()
 
     def __len__(self):
         return len(self.input_files)
     
+    @property
+    def dx(self):
+        return self._dx
+
+    def _read_dx(self):
+        """Reads the dx attribute from the first HDF5 file."""
+        if not self.input_files:
+            raise ValueError("No input files found in the dataset directory.")
+        with h5py.File(self.input_files[0], 'r') as f:
+            return f.attrs['dx']
+
     def load_data(self, file: str) -> Tuple[torch.Tensor, torch.Tensor]:
         """Loads the HDF5 file and extracts relevant data."""
         with h5py.File(file, 'r') as f:
@@ -38,12 +52,11 @@ class H5PairDataset(Dataset):
             omega = f['omega'][:]
             phi = f['phi'][:]
             gamma_n = f['gamma_n'][:]
-            
+
             # Stack input variables along the channel dimension
             data = np.stack((density, omega, phi), axis=1)  # (T, C, H, W)
             data_tensor = torch.tensor(data, dtype=torch.float32).unsqueeze(0)  # Add batch dim
             
-            # Rearrange dimensions: (B, T, V, H, W)
             return data_tensor.permute(0, 1, 2, 3, 4).unsqueeze(1).to(self.device), torch.tensor(gamma_n, dtype=torch.float32).to(self.device)
 
     def __getitem__(self, idx):
@@ -74,10 +87,11 @@ def get_data_loader(input_dir, target_dir=None, batch_size=32, shuffle=True, num
 
     Returns:
         DataLoader: A PyTorch DataLoader for the training dataset.
+        H5PairDataset: The dataset instance (dx can be accessed via dataset.dx).
     """
     dataset = H5PairDataset(input_dir, target_dir, device, derived)
     data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers)
-    return data_loader
+    return data_loader, dataset
 
 def get_test_loader(test_input_dir, test_target_dir=None, batch_size=32, shuffle=False, num_workers=4,
                     device=torch.device("cpu"), derived=False):
@@ -96,7 +110,8 @@ def get_test_loader(test_input_dir, test_target_dir=None, batch_size=32, shuffle
 
     Returns:
         DataLoader: A PyTorch DataLoader for the test dataset.
+        H5PairDataset: The dataset instance (dx can be accessed via dataset.dx).
     """
     dataset = H5PairDataset(test_input_dir, test_target_dir, device, derived)
     data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers)
-    return data_loader
+    return data_loader, dataset

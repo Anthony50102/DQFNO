@@ -39,6 +39,7 @@ class DQFNO(BaseModel, name='DQFNO'):
         modes: List[Tuple[int,int]],
         in_channels: int,
         out_channels: int,
+        dx: float,
         hidden_channels: int = 256,
         n_layers: int = 4,
         lifting_channel_ratio: int = 2,
@@ -57,6 +58,7 @@ class DQFNO(BaseModel, name='DQFNO'):
         self.hidden_channels = hidden_channels
         self.in_channels = in_channels
         self.out_channels = out_channels
+        self.dx = dx
         self.n_layers = n_layers
         self.lifting_channel_ratio = lifting_channel_ratio
         self.lifting_channels = lifting_channel_ratio * hidden_channels
@@ -94,19 +96,19 @@ class DQFNO(BaseModel, name='DQFNO'):
         )
 
         self.derived_module = DerivedMLP(
-            dx = 0.6544984694978736,
-            # TODO - Remove this hardcoding, also make sure this accepts different batch sizes
-            layers = [400,528,200],
+            type='derived',
+            dx = dx,
         ) if derived_module != None else None
         
         if self.debug:
             self._debug_print_initialization()
 
     def forward(self, x: torch.Tensor, output_shape: Union[Tuple[int, ...], List[Tuple[int, ...]], None] = None, **kwargs) -> torch.Tensor:
-        x, derived_x = x
+        x, derived = x # derived shape (B, D)
         b, c, t, v, h, w = x.shape
         
-        self.derived_module(x) if self.derived_module != None else None
+        if self.derived_module != None:
+            self.derived_module.store(derived)
 
         if self.debug:
             print(f"Input shape: (batch={b}, channels={c}, timesteps={t}, vars={v}, height={h}, width={w})")
@@ -128,14 +130,12 @@ class DQFNO(BaseModel, name='DQFNO'):
         
         x = self.projection(x)
 
-        derived_x = self.derived_module(x) if self.derived_module != None else None
-        
         if self.debug:
             self._debug_print_model_parameters()
         
         if self.derived_module != None:
-            # TODO - Fix to allow for multiple batch sizes 
-            return (x, derived_x.unsqueeze(0))
+            derived_x = self.derived_module(x)
+            return (x, derived_x)
         
         if self.derived_module == None:
             return x
@@ -181,6 +181,7 @@ class DQFNO(BaseModel, name='DQFNO'):
                 "modes": self._modes,
                 "in_channels": self.in_channels,
                 "out_channels": self.out_channels,
+                "dx": self.dx,
                 "hidden_channels": self.hidden_channels,
                 "n_layers": self.n_layers,
                 "lifting_channel_ratio": self.lifting_channel_ratio,

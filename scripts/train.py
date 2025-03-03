@@ -24,20 +24,26 @@ def main() -> None:
     config = pipe.read_conf()
 
     # Create train and test loaders
-    train_loader = get_data_loader(
+    train_loader, train_dataset = get_data_loader(
         config.data.train_input_dir,
         config.data.train_target_dir,
         batch_size=config.data.batch_size,
         shuffle=True,
         num_workers=0
     )
-    test_loader = get_test_loader(
-        config.data.train_input_dir,
-        config.data.train_target_dir,
+
+    test_loader, test_dataset = get_test_loader(
+        config.data.test_input_dir,
+        config.data.test_target_dir,
         batch_size=config.data.batch_size,
-        shuffle=True,
+        shuffle=False,
         num_workers=0
     )
+
+    # Access dx directly
+    dx = train_dataset.dx
+    if dx != test_dataset.dx:
+        raise ValueError("Test and train datasets have differtent dx")
 
     # Initialize the model
     model = DQFNO(
@@ -46,6 +52,7 @@ def main() -> None:
         out_channels=config.dqfno.data_channels,
         hidden_channels=config.dqfno.hidden_channels,
         n_layers=config.dqfno.n_layers,
+        dx = dx
     )
 
     # Optimizer
