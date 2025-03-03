@@ -16,14 +16,16 @@ default: &DEFAULT
 
   # Optimizer
   opt:
-    n_epochs: 1
+    n_epochs: 10
     learning_rate: 1e-3
     weight_decay: .01
 
   # Dataset related
   data:
-    train_input_dir: /Users/anthonypoole/TACC/processed_data/test
-    train_target_dir: /Users/anthonypoole/TACC/processed_data/test
+    train_input_dir: /Users/anthonypoole/data/local_dqfno/train/chunked
+    train_target_dir: /Users/anthonypoole/data/local_dqfno/train/chunked
+    test_input_dir: /Users/anthonypoole/data/local_dqfno/train/chunked
+    test_target_dir: /Users/anthonypoole/data/local_dqfno/train/chunked
     batch_size: 1
 
   # Losses
