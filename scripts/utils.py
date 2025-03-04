@@ -1,3 +1,8 @@
+import matplotlib.pyplot as plt
+import torch
+from src.models.dqfno import DQFNO
+from src.losses.custom_losses import MultiTaskLoss
+from src.losses.data_losses import LpLoss, H1Loss
 import os
 import json
 from datetime import datetime
@@ -48,3 +53,51 @@ def create_run_directory(config, base_dir='./runs'):
         json.dump(meta_data, f, indent=4)
     
     return run_dir
+
+def initialize_model(config, dx, device):
+    model = DQFNO(
+        modes=config.dqfno.modes,
+        in_channels=config.dqfno.data_channels,
+        out_channels=config.dqfno.data_channels,
+        hidden_channels=config.dqfno.hidden_channels,
+        n_layers=config.dqfno.n_layers,
+        dx=dx,
+        derived_type=config.dqfno.derived_type,
+    )
+    model.to(device)
+    return model
+
+def get_loss_object(config):
+    selector_state = lambda y_pred, y: (y_pred[0], y[0])
+    selector_derived = lambda y_pred, y: (y_pred[1], y[1])
+    
+    losses = []
+    selectors = []
+    for loss, weight in zip(config.losses.losses, config.losses.weights):
+        if loss == 'lp':
+            losses.append(LpLoss(d=4, p=2, reduction='mean'))
+            selectors.append(selector_state)
+        elif loss == 'h1':
+            losses.append(H1Loss(d=2))
+            selectors.append(selector_state)
+        elif loss == 'derived':
+            losses.append(torch.nn.MSELoss())
+            selectors.append(selector_derived)
+    
+    return MultiTaskLoss(
+        loss_functions=losses,
+        scales=config.losses.weights,
+        multi_output=True,
+        input_selectors=selectors
+    )
+
+def plot_and_save_loss(train_losses, test_losses, n_epochs, run_dir):
+    plt.figure()
+    plt.plot(range(n_epochs), train_losses, label='Train Loss')
+    plt.plot(range(n_epochs), test_losses, label='Test Loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.legend()
+    plt.title('Train vs Test Loss')
+    plt.savefig(os.path.join(run_dir, 'loss_plot.png'))
+    plt.close()

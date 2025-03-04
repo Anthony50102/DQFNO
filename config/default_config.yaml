@@ -3,7 +3,7 @@ default: &DEFAULT
   # General
   verbose: True
   arch: 'dqfno'
-  device: 'cuda'
+  device: 'cpu'
 
   # FNO related
   dqfno:
@@ -12,7 +12,7 @@ default: &DEFAULT
       - [16, 16]
       - [32, 32]
       - [8, 8]
-    hidden_channels: 64
+    hidden_channels: 1
     n_layers: 4
     derived_type: none
 
@@ -24,10 +24,10 @@ default: &DEFAULT
 
   # Dataset related
   data:
-    train_input_dir: /scratch/10407/anthony50102/train
-    train_target_dir: /scratch/10407/anthony50102/train
-    test_input_dir: /scratch/10407/anthony50102/test
-    test_target_dir: /scratch/10407/anthony50102/test
+    train_input_dir: /Users/anthonypoole/data/local_dqfno/train/chunked
+    train_target_dir: /Users/anthonypoole/data/local_dqfno/train/chunked
+    test_input_dir: /Users/anthonypoole/data/local_dqfno/test/chunked
+    test_target_dir: /Users/anthonypoole/data/local_dqfno/test/chunked
     batch_size: 4
 
   # Losses
