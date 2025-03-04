@@ -52,7 +52,8 @@ def main() -> None:
         out_channels=config.dqfno.data_channels,
         hidden_channels=config.dqfno.hidden_channels,
         n_layers=config.dqfno.n_layers,
-        dx = dx
+        dx = dx,
+        derived_type=config.dqfno.derived_type,
     )
 
     # Optimizer

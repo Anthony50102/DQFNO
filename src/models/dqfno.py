@@ -48,6 +48,7 @@ class DQFNO(BaseModel, name='DQFNO'):
         non_linearity: nn.Module = F.gelu,
         conv_module: nn.Module = SpectralConv,
         derived_module: nn.Module = DerivedMLP,
+        derived_type: str = "none",
         debug: bool = False,
         **kwargs
     ) -> None:
@@ -95,8 +96,9 @@ class DQFNO(BaseModel, name='DQFNO'):
             non_linearity=non_linearity,
         )
 
+        self.derived_type = derived_type
         self.derived_module = DerivedMLP(
-            type='derived',
+            type=self.derived_type,
             dx = dx,
         ) if derived_module != None else None
         
@@ -187,6 +189,7 @@ class DQFNO(BaseModel, name='DQFNO'):
                 "lifting_channel_ratio": self.lifting_channel_ratio,
                 "projection_channel_ratio": self.projection_channel_ratio,
                 "positional_embedding": "grid" if isinstance(self.positional_embedding, GridEmbedding2D) else None,
+                "derived_type": self.derived_type, 
                 "non_linearity": self.non_linearity,
                 "debug": self.debug,
             }
