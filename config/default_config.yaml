@@ -3,7 +3,7 @@ default: &DEFAULT
   # General
   verbose: True
   arch: 'dqfno'
-  device: 'cpu'
+  device: 'cuda'
 
   # FNO related
   dqfno:

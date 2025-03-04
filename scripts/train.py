@@ -99,7 +99,7 @@ def main() -> None:
         input_selectors=selectors
     )
 
-    loss_obj.to(device)
+    #loss_obj.to(device)
 
     # Training loop
     for epoch in range(config.opt.n_epochs):
@@ -110,7 +110,8 @@ def main() -> None:
                                          desc=f"Training Epoch #{epoch}",
                                          total=len(train_loader)):
             
-            inputs, targets = inputs.to(device), targets.to(device)
+            inputs = (inputs[0].to(device), inputs[1].to(device))
+            targets = (targets[0].to(device),targets[1].to(device))
             optimizer.zero_grad()
             outputs = model(inputs)
             loss = loss_obj(outputs, targets)
@@ -131,7 +132,8 @@ def main() -> None:
     # Evaluate model on test set
     with torch.no_grad():
         for inputs, targets in test_loader:
-            inputs, targets = inputs.to(device), targets.to(device)
+            inputs = (inputs[0].to(device), inputs[1].to(device))
+            targets = (targets[0].to(device),targets[1].to(device))
             outputs = model(inputs)
             loss_fn = torch.nn.L1Loss()
             loss = loss_fn(outputs[0], targets[0])

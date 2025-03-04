@@ -3,7 +3,7 @@ from typing import List, Callable, Tuple, Any
 import torch
 from torch import nn
 
-class MultiTaskLoss(nn.Module):
+class MultiTaskLoss(object):
     """
     Computes a multi-task loss where:
       - The absolute loss is the weighted sum of individual losses.
@@ -33,7 +33,8 @@ class MultiTaskLoss(nn.Module):
             raise ValueError("The number of loss functions must match the number of scales.")
         
         # Register loss functions if they're modules
-        self.loss_functions = nn.ModuleList(loss_functions)
+        # TODO ???
+        #self.loss_functions = nn.ModuleList(loss_functions)
         
         total_scale = sum(scales)
         if abs(total_scale - 1.0) > 1e-6:
