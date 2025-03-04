@@ -1,8 +1,9 @@
 import warnings
 from typing import List, Callable, Tuple, Any
 import torch
+from torch import nn
 
-class MultiTaskLoss(object):
+class MultiTaskLoss(nn.Module):
     """
     Computes a multi-task loss where:
       - The absolute loss is the weighted sum of individual losses.
@@ -26,16 +27,13 @@ class MultiTaskLoss(object):
       input_selectors: List of callables (one per loss) that extract the desired inputs.
                        If None and multi_output is True, a default selector is used that returns (y_pred, y).
     """
-    def __init__(self, 
-                 loss_functions: List[Callable], 
-                 scales: List[float], 
-                 multi_output: bool = False,
-                 input_selectors: List[Callable[[Any, Any], Tuple]] = None):
-        
+    def __init__(self, loss_functions, scales, multi_output=False, input_selectors=None):
+        super(MultiTaskLoss, self).__init__()
         if len(loss_functions) != len(scales):
             raise ValueError("The number of loss functions must match the number of scales.")
         
-        self.loss_functions = loss_functions
+        # Register loss functions if they're modules
+        self.loss_functions = nn.ModuleList(loss_functions)
         
         total_scale = sum(scales)
         if abs(total_scale - 1.0) > 1e-6:
@@ -54,7 +52,6 @@ class MultiTaskLoss(object):
                 # Default: no selection; pass the full y_pred and y
                 self.input_selectors = [lambda y_pred, y: (y_pred, y)] * len(loss_functions)
         else:
-            # When not using multi_output, selectors are not used.
             self.input_selectors = None
 
     def abs(self, y_pred, y):
