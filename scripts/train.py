@@ -29,7 +29,8 @@ def main() -> None:
         config.data.train_target_dir,
         batch_size=config.data.batch_size,
         shuffle=True,
-        num_workers=0
+        num_workers=0,
+        device=torch.device(config.device),
     )
 
     test_loader, test_dataset = get_test_loader(
@@ -37,7 +38,8 @@ def main() -> None:
         config.data.test_target_dir,
         batch_size=config.data.batch_size,
         shuffle=False,
-        num_workers=0
+        num_workers=0,
+        device=torch.device(config.device),
     )
 
     # Access dx directly
@@ -55,6 +57,8 @@ def main() -> None:
         dx = dx,
         derived_type=config.dqfno.derived_type,
     )
+
+    model.to(torch.device(config.device))
 
     # Optimizer
     optimizer = torch.optim.AdamW(
@@ -88,6 +92,8 @@ def main() -> None:
         input_selectors=selectors
     )
 
+    loss_obj.to(torch.device(config.device))
+
     # Training loop
     for epoch in range(config.opt.n_epochs):
         running_loss = 0.0
@@ -96,6 +102,8 @@ def main() -> None:
         for i, (inputs, targets) in tqdm(enumerate(train_loader),
                                          desc=f"Training Epoch #{epoch}",
                                          total=len(train_loader)):
+            
+            inputs, targets = inputs.to(torch.device(config.device)), targets.to(torch.device(config.device))
             optimizer.zero_grad()
             outputs = model(inputs)
             loss = loss_obj(outputs, targets)
@@ -116,6 +124,7 @@ def main() -> None:
     # Evaluate model on test set
     with torch.no_grad():
         for inputs, targets in test_loader:
+            inputs, targets = inputs.to(torch.device(config.device)), targets.to(torch.device(config.device))
             outputs = model(inputs)
             loss_fn = torch.nn.L1Loss()
             loss = loss_fn(outputs[0], targets[0])
