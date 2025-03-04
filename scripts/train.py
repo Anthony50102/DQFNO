@@ -23,6 +23,13 @@ def main() -> None:
     )
     config = pipe.read_conf()
 
+    # Check device
+    device = torch.device(config.device)
+    if torch.cuda.is_available() and (config.device == "cpu"):
+        print(f"Selected CPU but CUDA is availible...")
+    if torch.cuda.is_available() and (config.device == "cuda"):
+        print(f"Using CUDA...")
+
     # Create train and test loaders
     train_loader, train_dataset = get_data_loader(
         config.data.train_input_dir,
@@ -30,7 +37,7 @@ def main() -> None:
         batch_size=config.data.batch_size,
         shuffle=True,
         num_workers=0,
-        device=torch.device(config.device),
+        device=device,
     )
 
     test_loader, test_dataset = get_test_loader(
@@ -39,7 +46,7 @@ def main() -> None:
         batch_size=config.data.batch_size,
         shuffle=False,
         num_workers=0,
-        device=torch.device(config.device),
+        device=device,
     )
 
     # Access dx directly
@@ -58,7 +65,7 @@ def main() -> None:
         derived_type=config.dqfno.derived_type,
     )
 
-    model.to(torch.device(config.device))
+    model.to(device)
 
     # Optimizer
     optimizer = torch.optim.AdamW(
@@ -92,7 +99,7 @@ def main() -> None:
         input_selectors=selectors
     )
 
-    loss_obj.to(torch.device(config.device))
+    loss_obj.to(device)
 
     # Training loop
     for epoch in range(config.opt.n_epochs):
@@ -103,7 +110,7 @@ def main() -> None:
                                          desc=f"Training Epoch #{epoch}",
                                          total=len(train_loader)):
             
-            inputs, targets = inputs.to(torch.device(config.device)), targets.to(torch.device(config.device))
+            inputs, targets = inputs.to(device), targets.to(device)
             optimizer.zero_grad()
             outputs = model(inputs)
             loss = loss_obj(outputs, targets)
@@ -124,7 +131,7 @@ def main() -> None:
     # Evaluate model on test set
     with torch.no_grad():
         for inputs, targets in test_loader:
-            inputs, targets = inputs.to(torch.device(config.device)), targets.to(torch.device(config.device))
+            inputs, targets = inputs.to(device), targets.to(device)
             outputs = model(inputs)
             loss_fn = torch.nn.L1Loss()
             loss = loss_fn(outputs[0], targets[0])
