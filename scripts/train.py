@@ -11,11 +11,12 @@ from src.losses.data_losses import LpLoss, H1Loss
 from utils import create_run_directory, initialize_model, get_loss_object, plot_and_save_loss
 
 def main() -> None:
-    config_name: str = "default"
+    config_file = sys.argv[1] if len(sys.argv) > 1 else "config/default_config.yaml"
+    print(config_file)
     pipe = ConfigPipeline([
-        YamlConfig("./default_config.yaml", config_name="default", config_folder="config"),
-        ArgparseConfig(infer_types=True, config_name=None, config_file=None),
-        YamlConfig(config_folder="../config"),
+        YamlConfig(config_file, config_name="default"),
+        # TODO - Fix?
+        # ArgparseConfig(infer_types=True, config_name=None, config_file=None),
     ])
     config = pipe.read_conf()
 
