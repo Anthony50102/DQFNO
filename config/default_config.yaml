@@ -12,9 +12,9 @@ default: &DEFAULT
       - [16, 16]
       - [32, 32]
       - [8, 8]
-    hidden_channels: 1
+    hidden_channels: 8
     n_layers: 4
-    derived_type: none
+    derived_type: cnn
 
   # Optimizer
   opt:
@@ -28,7 +28,7 @@ default: &DEFAULT
     train_target_dir: /Users/anthonypoole/data/local_dqfno/train/chunked
     test_input_dir: /Users/anthonypoole/data/local_dqfno/test/chunked
     test_target_dir: /Users/anthonypoole/data/local_dqfno/test/chunked
-    batch_size: 4
+    batch_size: 2
 
   # Losses
   losses:
