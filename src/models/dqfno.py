@@ -98,7 +98,7 @@ class DQFNO(BaseModel, name='DQFNO'):
 
         self.derived_type = derived_type
         self.derived_module = DerivedMLP(
-            type=self.derived_type,
+            _type=self.derived_type,
             dx = dx,
         ) if derived_module != None else None
         

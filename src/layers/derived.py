@@ -14,25 +14,25 @@ class DerivedMLP(nn.Module):
     using linear layer (or in future conv) to inform/compute future
     derived quanities
     """
-    def __init__(self, dx: float = None, type:str = 'derived'):
+    def __init__(self, dx: float = None, _type: str = 'direct'):
         """
         layer: List[int], layers of the MLP
         """
         super().__init__()
-        if type == "none":
+        if _type == "direct":
             self.hw = HasegawaWatakini(dx=dx)
-        elif type == "mlp":
+        elif _type == "mlp":
             self.mlp = ChannelMLP(
                 in_channels=2,
                 hidden_channels=4,
                 out_channels=1
                 )
-        elif type == "cnn":
+        elif _type == "cnn":
             self.cnn = TimeDistributedCNN(channel=1, variables=3)
         else:
-            raise ValueError("Type of derived quanity f{type} is not one of the possile \'none\', \'mlp\', or \'cnn\' ")
+            raise ValueError(f"Type of derived quanity f{type(_type)} is not one of the possile \'none\', \'mlp\', or \'cnn\' ")
         self.input_derived: torch.tensor = None
-        self._type = type # Determine what type of method we are going to use to predict out new outputs
+        self._type = _type # Determine what type of method we are going to use to predict out new outputs
     
     def _compute_derived(self, x: torch.tensor) -> torch.tensor:
         '''
