@@ -5,3 +5,8 @@
 *DQFNO*
 *runs*
 *.ipynb*
+*queuestate*
+*.o*
+*.e*
+slurm_outputs
+*pylauncher_tmp*
