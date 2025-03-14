@@ -18,10 +18,10 @@ default: &DEFAULT
 
   # Optimizer
   opt:
-    n_epochs: 4
+    n_epochs: 10
     learning_rate: 1e-3
     weight_decay: .01
-    push_forward_type: none # none for no pushforward, only for only doing push forward testing and half for half way through training push forward
+    push_forward_type: only # none for no pushforward, only for only doing push forward testing and half for half way through training push forward
 
   # Dataset related
   data:
