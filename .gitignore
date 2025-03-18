@@ -10,3 +10,4 @@
 *.e*
 slurm_outputs
 *pylauncher_tmp*
+*.pth*
