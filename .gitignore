@@ -4,7 +4,7 @@
 *.pdf
 *DQFNO*
 *runs*
-*.ipynb*
+.ipynb
 *queuestate*
 *.o*
 *.e*

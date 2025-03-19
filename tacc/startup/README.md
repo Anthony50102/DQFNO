@@ -1,0 +1,1 @@
+### Basic startup scripts for when creating a compute node
