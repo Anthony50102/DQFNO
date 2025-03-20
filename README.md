@@ -1,8 +1,19 @@
-# DQFNO
-Derived-Quanities Fourier Neural Operator
+# DQNO: Learning Statistically Accurate Derived Quanties of Hasegawa Wakatani Model
+Derived-Quanities Neural Operator (DQNO) is a library for learning various neural operator methods to predict statistically accurate derived quanities of the Hasegawa Wakatani Model.
+
+Unlike other neural operators these focus on predicting accurate derived quanties of the system instead of pointwise accurate state predictions
+
+Some of these quanties are defined below:
+$$
+\begin{align}
+    \Gamma^n &= -     \iint{ \mathrm{d}^2x \space \left( n \space \partial_y \phi \right) }  \\\
+    \Gamma^c &= c_1   \iint{ \mathrm{d}^2x \space \left(n - \phi \right)^2}  \\\
+    E        &= \small \frac{1}{2} \normalsize \iint{\mathrm{d}^2 x \space \left(n^2 - \left|\nabla_\bot \phi \right|^2 \right)}  \\\
+    U        &= \small \frac{1}{2} \normalsize \iint{\mathrm{d}^2 x \space \left(n-\nabla_\bot^2  \phi\right)^2} = \small \frac{1}{2} \normalsize \iint{\mathrm{d}^2 x \space \left(n-\Omega\right)^2}
+\end{align}
+$$
 
 
-### Important Things
 ## The Hasegawa-Wakatani Model
 
 The HW model describes drift-wave turbulence using two physical fields: the density $n$ and the potential $\phi$ using various gradients on these.
