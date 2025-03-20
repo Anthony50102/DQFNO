@@ -4,6 +4,7 @@ Derived-Quanities Neural Operator (DQNO) is a library for learning various neura
 Unlike other neural operators these focus on predicting accurate derived quanties of the system instead of pointwise accurate state predictions
 
 Some of these quanties are defined below:
+
 $$
 \begin{align}
     \Gamma^n &= -     \iint{ \mathrm{d}^2x \space \left( n \space \partial_y \phi \right) }  \\\
