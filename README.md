@@ -1,9 +1,10 @@
-# DQNO: Learning Statistically Accurate Derived Quanties of Hasegawa Wakatani Model
-Derived-Quanities Neural Operator (DQNO) is a library for learning various neural operator methods to predict statistically accurate derived quanities of the Hasegawa Wakatani Model.
+# DQNO: Learning Statistically Accurate Derived Quantities of the Hasegawa-Wakatani Model
 
-Unlike other neural operators these focus on predicting accurate derived quanties of the system instead of pointwise accurate state predictions
+Derived-Quantities Neural Operator (DQNO) is a library for learning various neural operator methods to predict statistically accurate derived quantities of the Hasegawa-Wakatani Model.
 
-Some of these quanties are defined below:
+Unlike other neural operators, these focus on predicting accurate derived quantities of the system instead of pointwise accurate state predictions.
+
+Some of these quantities are defined below:
 
 $$
 \begin{align}
@@ -14,10 +15,9 @@ $$
 \end{align}
 $$
 
-
 ## The Hasegawa-Wakatani Model
 
-The HW model describes drift-wave turbulence using two physical fields: the density $n$ and the potential $\phi$ using various gradients on these.
+The HW model describes drift-wave turbulence using two physical fields: the density \(n\) and the potential \(\phi\), incorporating various gradients.
 
 $$
 \begin{align}
@@ -34,7 +34,7 @@ $$
 \end{align}
 $$
 
-$\Omega$ is also (more) commonly written as $\zeta$ (The voriticity)
+\(\Omega\) is also commonly written as \(\zeta\) (the vorticity):
 
 $$
 \begin{align}
