@@ -1,9 +1,6 @@
 #!/bin/bash
 
-module load gcc cuda openmpi
-module load python3_mpi
-module load phdf5
-module load sqlite
+module load gcc cuda openmpi sqlite phdf5 python3_mpi
 
 # Store the random number in a variable for consistency
 RAND_DIR=$SCRATCH/junk_envs/$RANDOM
@@ -20,5 +17,3 @@ python3 -m pip install -e /work/10407/anthony50102/vista/DQFNO
 # Jupyter stuff
 pip3 install jupyter ipykernel
 python3 -m ipykernel install --user --name=myenv --display-name "Python (myenv)"
-# TODO - fix this
-# export PYTHONPATH="$RAND_DIR/lib/python3.9/site-packages"
